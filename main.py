@@ -2,6 +2,7 @@ import requests
 import json
 
 from config_loader import load_headers
+from input_validation import prompt_date, prompt_station
 
 
 # 地点转代码
@@ -9,17 +10,17 @@ with open("12306_station_name_to_code.json", "r", encoding="utf-8") as file:
     stations = json.load(file)
 
 # 用户输入
-date = input("请输入日期:")
-from_station = input("请输入出发站:")
-to_station = input("请输入目的地:")
+date = prompt_date()
+from_station_code = prompt_station(stations, "出发站")
+to_station_code = prompt_station(stations, "目的地")
 
 
 # 12306的查询接口
 url = (
     "https://kyfw.12306.cn/otn/leftTicket/queryG?"
     f"leftTicketDTO.train_date={date}&"
-    f"leftTicketDTO.from_station={stations[from_station]}&"
-    f"leftTicketDTO.to_station={stations[to_station]}&"
+    f"leftTicketDTO.from_station={from_station_code}&"
+    f"leftTicketDTO.to_station={to_station_code}&"
     "purpose_codes=ADULT"
 )
 
