@@ -1,7 +1,13 @@
 import unittest
 from datetime import date
 
-from input_validation import prompt_date, prompt_station, validate_date, validate_station
+from input_validation import (
+    parse_date_parts,
+    prompt_date,
+    prompt_station,
+    validate_date,
+    validate_station,
+)
 
 
 class ValidateDateTests(unittest.TestCase):
@@ -23,6 +29,16 @@ class ValidateDateTests(unittest.TestCase):
             "2026-09-13",
         )
 
+    def test_combines_year_month_and_day(self):
+        self.assertEqual(
+            parse_date_parts("2026", "9", "13", today=date(2026, 9, 13)),
+            "2026-09-13",
+        )
+
+    def test_rejects_a_non_numeric_year(self):
+        with self.assertRaisesRegex(ValueError, "年份格式错误"):
+            parse_date_parts("二零二六", "9", "13", today=date(2026, 9, 13))
+
 
 class ValidateStationTests(unittest.TestCase):
     def test_rejects_unknown_station_with_field_name(self):
@@ -38,7 +54,7 @@ class ValidateStationTests(unittest.TestCase):
 
 class PromptUntilValidTests(unittest.TestCase):
     def test_date_error_is_reported_before_retrying(self):
-        answers = iter(["2026/09/13", "2026-09-13"])
+        answers = iter(["二零二六", "9", "13", "2026", "9", "13"])
         messages = []
 
         result = prompt_date(
@@ -48,7 +64,7 @@ class PromptUntilValidTests(unittest.TestCase):
         )
 
         self.assertEqual(result, "2026-09-13")
-        self.assertEqual(messages, ["日期格式错误，请使用 YYYY-MM-DD 格式。"])
+        self.assertEqual(messages, ["年份格式错误，请输入数字。"])
 
     def test_unknown_station_is_reported_before_retrying(self):
         answers = iter(["不存在站", "上海"])
